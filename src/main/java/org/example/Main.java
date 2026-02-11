@@ -94,33 +94,30 @@ public class Main {
 
 
     public static void azuriranjeNaslovaKnjige(Long bookId, String newTitle) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction tx = session.beginTransaction();
 
-        Book book = session.get(Book.class, bookId);
-        if (book != null) {
-            book.setTitle(newTitle);
-            session.merge(book);
-            System.out.println("Knjiga ažurirana: " + newTitle);
+            String hql = "UPDATE Book SET title = :newTitle WHERE id = :bookId";
+            session.createQuery(hql)
+                    .setParameter("newTitle", newTitle)
+                    .setParameter("bookId", bookId)
+                    .executeUpdate();
+            tx.commit();
+
         }
 
-        tx.commit();
-        session.close();
     }
 
 
     public static void brisanjeKnjige(Long bookId) {
-        Session session = HibernateUtil.getSessionFactory().openSession();
-        Transaction tx = session.beginTransaction();
-
-        Book book = session.get(Book.class, bookId);
-        if (book != null) {
-            session.remove(book);
-            System.out.println("Knjiga obrisana: " + bookId);
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Transaction transaction = session.beginTransaction();
+            String hql = "DELETE FROM Book WHERE id = :bookId";
+            session.createQuery(hql)
+                    .setParameter("bookId", bookId)
+                    .executeUpdate();
+            transaction.commit();
         }
-
-        tx.commit();
-        session.close();
     }
 }
 
